@@ -1,0 +1,25 @@
+==================================================
+            DIAGNOSTIC REPORT
+==================================================
+Predicted Diagnosis : CIN3
+Confidence Score    : 99.98%
+
+--- Automated Swede Score ---
+  Grad-CAM Lesion Coverage  : 27.5% of image
+
+  Swede Component                 Score   Source
+  ----------------------------------------------
+  Acetowhiteness (0-2)         :   2     [RULE-BASED]
+  Margins / Surface  (0-2)     :   2     [RULE-BASED]
+  Vessel Patterns    (0-2)     :   2     [RULE-BASED]
+  Iodine Staining    (0-2)     :   2     [RULE-BASED]
+  Lesion Size Score  (0-2)     :   2     [GRAD-CAM EST.]
+  ----------------------------------------------
+  Total Swede Score            :   10 / 10
+
+Risk Level          : HIGH
+Action Protocol     : High Risk (HSIL+): Urgent biopsy and treatment evaluation required.
+
+--- Cancer/Lesion Localization ---
+  Bounding Box: [X: 101, Y: 94, Width: 380, Height: 291]
+==================================================

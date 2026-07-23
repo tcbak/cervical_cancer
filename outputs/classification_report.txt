@@ -1,0 +1,14 @@
+Average Test Loss: 0.2767
+Overall Accuracy:  97.15%
+
+Classification Report:
+              precision    recall  f1-score   support
+
+        CIN1       0.89      0.76      0.82        21
+        CIN2       0.57      1.00      0.73        20
+        CIN3       0.93      1.00      0.96        13
+      Normal       1.00      0.98      0.99       578
+
+    accuracy                           0.97       632
+   macro avg       0.85      0.93      0.87       632
+weighted avg       0.98      0.97      0.97       632

@@ -1,0 +1,25 @@
+==================================================
+            DIAGNOSTIC REPORT
+==================================================
+Predicted Diagnosis : CIN2
+Confidence Score    : 99.92%
+
+--- Automated Swede Score ---
+  Grad-CAM Lesion Coverage  : 14.4% of image
+
+  Swede Component                 Score   Source
+  ----------------------------------------------
+  Acetowhiteness (0-2)         :   1     [RULE-BASED]
+  Margins / Surface  (0-2)     :   1     [RULE-BASED]
+  Vessel Patterns    (0-2)     :   1     [RULE-BASED]
+  Iodine Staining    (0-2)     :   1     [RULE-BASED]
+  Lesion Size Score  (0-2)     :   1     [GRAD-CAM EST.]
+  ----------------------------------------------
+  Total Swede Score            :   5 / 10
+
+Risk Level          : INTERMEDIATE
+Action Protocol     : Intermediate Risk (CIN2+): Colposcopic biopsy highly recommended.
+
+--- Cancer/Lesion Localization ---
+  Bounding Box: [X: 231, Y: 124, Width: 305, Height: 269]
+==================================================
