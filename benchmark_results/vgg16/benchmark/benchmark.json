@@ -1,0 +1,20 @@
+{
+    "model_name": "vgg16",
+    "display_name": "VGG16",
+    "category": "Heavy",
+    "date": "2026-08-08 02:01:15.718059",
+    "input_size": "224x224",
+    "benchmark_time_seconds": 11.22,
+    "total_parameters": 134276932,
+    "trainable_parameters": 134276932,
+    "total_parameters_million": 134.277,
+    "model_size_mb": 512.237,
+    "macs": 15466234880.0,
+    "macs_million": 15466.23,
+    "flops_million": 30932.47,
+    "cpu_latency_ms": 144.894,
+    "cpu_throughput_fps": 6.9,
+    "gpu_latency_ms": null,
+    "gpu_throughput_fps": null,
+    "gpu_peak_memory_mb": null
+}

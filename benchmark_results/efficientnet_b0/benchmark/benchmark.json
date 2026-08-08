@@ -1,0 +1,20 @@
+{
+    "model_name": "efficientnet_b0",
+    "display_name": "EfficientNet-B0",
+    "category": "Proposed",
+    "date": "2026-08-07 11:11:45.070458",
+    "input_size": "224x224",
+    "benchmark_time_seconds": 2.39,
+    "total_parameters": 4012672,
+    "trainable_parameters": 4012672,
+    "total_parameters_million": 4.013,
+    "model_size_mb": 15.59,
+    "macs": 413870144.0,
+    "macs_million": 413.87,
+    "flops_million": 827.74,
+    "cpu_latency_ms": 34.843,
+    "cpu_throughput_fps": 28.7,
+    "gpu_latency_ms": null,
+    "gpu_throughput_fps": null,
+    "gpu_peak_memory_mb": null
+}

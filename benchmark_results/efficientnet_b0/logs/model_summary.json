@@ -1,0 +1,11 @@
+{
+    "model_name": "efficientnet_b0",
+    "display_name": "EfficientNet-B0",
+    "category": "Proposed",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 4012672,
+    "trainable_parameters": 4012672
+}

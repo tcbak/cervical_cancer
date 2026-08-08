@@ -1,0 +1,10 @@
+              precision    recall  f1-score   support
+
+        CIN1     0.5556    0.9524    0.7018        21
+        CIN2     0.8636    0.9500    0.9048        20
+        CIN3     0.7647    1.0000    0.8667        13
+      Normal     1.0000    0.9637    0.9815       578
+
+    accuracy                         0.9636       632
+   macro avg     0.7960    0.9665    0.8637       632
+weighted avg     0.9761    0.9636    0.9674       632

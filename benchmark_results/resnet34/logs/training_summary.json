@@ -1,0 +1,11 @@
+{
+    "model_name": "resnet34",
+    "best_epoch": 8,
+    "best_validation_f1": 0.915690386002886,
+    "training_time_seconds": 3961.9898211956024,
+    "training_time_minutes": 66.03316368659337,
+    "average_epoch_time_seconds": 304.7681866242335,
+    "total_parameters": 21286724,
+    "trainable_parameters": 21286724,
+    "total_epochs_completed": 13
+}

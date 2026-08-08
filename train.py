@@ -1,209 +1,807 @@
 import os
-import argparse
 import json
-import matplotlib.pyplot as plt
+import time
+import random
+import argparse
+from datetime import datetime
+
 import numpy as np
+import matplotlib.pyplot as plt
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from sklearn.metrics import f1_score, classification_report
+
+from sklearn.metrics import (
+    f1_score,
+    accuracy_score,
+)
 
 from dataset import get_dataloaders
-from model import get_model
+from model import (
+    get_model,
+    get_input_size,
+    get_model_info
+)
+
+# ==========================================================
+# Reproducibility
+# ==========================================================
+
+def set_seed(seed=42):
+    """
+    Makes experiments reproducible.
+    """
+
+    random.seed(seed)
+    np.random.seed(seed)
+
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+# ==========================================================
+# Helper Functions
+# ==========================================================
+
+def count_parameters(model):
+    """
+    Returns total and trainable parameters.
+    """
+
+    total = sum(p.numel() for p in model.parameters())
+
+    trainable = sum(
+        p.numel()
+        for p in model.parameters()
+        if p.requires_grad
+    )
+
+    return total, trainable
+
+
+def save_json(data, filename):
+
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+# ==========================================================
+# Experiment Folder Creation
+# ==========================================================
+
+def create_experiment_folders(root_dir, model_name):
+
+    experiment_dir = os.path.join(root_dir, model_name)
+
+    folders = {
+
+        "root": experiment_dir,
+
+        "checkpoints": os.path.join(
+            experiment_dir,
+            "checkpoints"
+        ),
+
+        "plots": os.path.join(
+            experiment_dir,
+            "plots"
+        ),
+
+        "logs": os.path.join(
+            experiment_dir,
+            "logs"
+        ),
+
+        "evaluation": os.path.join(
+            experiment_dir,
+            "evaluation"
+        ),
+
+        "benchmark": os.path.join(
+            experiment_dir,
+            "benchmark"
+        )
+    }
+
+    for folder in folders.values():
+        os.makedirs(folder, exist_ok=True)
+
+    return folders
+
+
+# ==========================================================
+# Training Function
+# ==========================================================
 
 def train_model(args):
-    # Setup directories
-    os.makedirs(args.output_dir, exist_ok=True)
-    
-    # Device configuration
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-    
-    # 1. Dataloaders
-    print("Loading datasets...")
-    train_loader, val_loader, _, class_names, class_weights = get_dataloaders(
-        data_dir=args.data_dir,
-        batch_size=args.batch_size
+
+    set_seed(42)
+
+    device = torch.device(
+        "cuda"
+        if torch.cuda.is_available()
+        else "cpu"
     )
-    num_classes = len(class_names)
-    print(f"Dataset classes: {class_names}")
-    print(f"Computed loss weights for imbalance handling: {class_weights}")
+
     
-    # 2. Model
+    print("Cervical Cancer Benchmark Training")
+    
+    print(f"Device : {device}")
+
+    model_info = get_model_info(args.model_name)
+
+    print(f"Model  : {model_info['display_name']}")
+    print(f"Type   : {model_info['category']}")
+
+    folders = create_experiment_folders(
+        args.output_dir,
+        args.model_name
+    )
+
+    img_size = get_input_size(
+        args.model_name
+    )
+
+    print(f"Input Size : {img_size}")
+
+    experiment_info = {
+
+        "model_name": args.model_name,
+
+        "display_name": model_info["display_name"],
+
+        "category": model_info["category"],
+
+        "epochs": args.epochs,
+
+        "batch_size": args.batch_size,
+
+        "learning_rate": args.lr,
+
+        "weight_decay": args.weight_decay,
+
+        "patience": args.patience,
+
+        "pretrained": not args.no_pretrained,
+
+        "freeze_backbone": args.freeze_backbone,
+
+        "input_size": img_size,
+
+        "device": str(device),
+
+        "date": str(datetime.now())
+    }
+
+    save_json(
+
+        experiment_info,
+
+        os.path.join(
+
+            folders["logs"],
+
+            "experiment.json"
+
+        )
+
+    )
+
+    print("\nLoading Dataset...")
+
+    train_loader, val_loader, _, class_names, class_weights = get_dataloaders(
+
+        data_dir=args.data_dir,
+
+        batch_size=args.batch_size,
+
+        img_size=img_size
+
+    )
+
+    print("Classes")
+
+    print(class_names)
+
+    print("Loss Weights")
+
+    print(class_weights)
+
+    num_classes = len(class_names)
+
+    # ==========================================================
+    # Build Model
+    # ==========================================================
+
+    print("\nBuilding Model...")
+
     model = get_model(
         num_classes=num_classes,
         model_name=args.model_name,
         pretrained=not args.no_pretrained,
         freeze_backbone=args.freeze_backbone
     )
+
     model = model.to(device)
-    
-    # 3. Loss & Optimizer
-    # Note: WeightedRandomSampler already balances batch distributions, but adding 
-    # class weights to the loss function provides an extra layer of protection.
-    loss_weights = class_weights.to(device)
-    criterion = nn.CrossEntropyLoss(weight=loss_weights)
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    
-    # Learning rate scheduler
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=2)
-    
-    # History tracking
-    history = {
-        "train_loss": [],
-        "train_acc": [],
-        "val_loss": [],
-        "val_acc": [],
-        "val_f1": []
+
+    total_params, trainable_params = count_parameters(model)
+
+    print(f"Total Parameters      : {total_params:,}")
+    print(f"Trainable Parameters  : {trainable_params:,}")
+
+    model_summary = {
+        "model_name": args.model_name,
+        "display_name": model_info["display_name"],
+        "category": model_info["category"],
+        "input_size": img_size,
+        "total_parameters": total_params,
+        "trainable_parameters": trainable_params
+        
     }
-    
+
+    save_json(
+        model_summary,
+        os.path.join(
+            folders["logs"],
+            "model_summary.json"
+        )
+    )
+
+    # ==========================================================
+    # Loss Function
+    # ==========================================================
+
+    print("\nInitializing Loss Function...")
+
+    loss_weights = class_weights.to(device)
+
+    criterion = nn.CrossEntropyLoss(
+        weight=loss_weights
+    )
+
+    # ==========================================================
+    # Optimizer
+    # ==========================================================
+
+    optimizer = optim.Adam(
+
+        model.parameters(),
+
+        lr=args.lr,
+
+        weight_decay=args.weight_decay
+
+    )
+
+    # ==========================================================
+    # Learning Rate Scheduler
+    # ==========================================================
+
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+
+        optimizer,
+
+        mode="max",
+
+        factor=0.5,
+
+        patience=2
+
+    )
+
+    # ==========================================================
+    # Checkpoint Paths
+    # ==========================================================
+
+    best_checkpoint_path = os.path.join(
+        folders["checkpoints"],
+        "best_model.pth"
+    )
+
+    last_checkpoint_path = os.path.join(
+        folders["checkpoints"],
+        "last_model.pth"
+    )
+    # ==========================================================
+    # Training History
+    # ==========================================================
+
+    history = {
+
+        "train_loss": [],
+
+        "train_accuracy": [],
+
+        "validation_loss": [],
+
+        "validation_accuracy": [],
+
+        "validation_f1": []
+
+    }
+
     best_val_f1 = 0.0
+
+    best_epoch = 0
+
     patience_counter = 0
+
+    # ==========================================================
+    # Training Timer
+    # ==========================================================
+
+    training_start = time.time()
+
+    epoch_times = []
+
     
-    print("\nStarting Training Loop...")
+    print("Starting Training")
+
+    # ==========================================================
+    # Training Loop
+    # ==========================================================
+
     for epoch in range(args.epochs):
-        # --- Training Phase ---
+
+        
+        print(f"Epoch {epoch + 1}/{args.epochs}")
+        
+
+        epoch_start = time.time()
+
+        # -----------------------------
+        # Training Phase
+        # -----------------------------
         model.train()
+
         running_loss = 0.0
-        correct_train = 0
-        total_train = 0
-        
-        for batch_idx, (images, labels) in enumerate(train_loader):
-            images, labels = images.to(device), labels.to(device)
-            
+        running_total = 0
+
+        train_predictions = []
+        train_targets = []
+
+        for images, labels in train_loader:
+
+            images = images.to(device)
+            labels = labels.to(device)
+
             optimizer.zero_grad()
-            
+
             outputs = model(images)
+
             loss = criterion(outputs, labels)
-            
+
             loss.backward()
+
             optimizer.step()
-            
+
+            # -----------------------------
+            # Statistics
+            # -----------------------------
             running_loss += loss.item() * images.size(0)
+
             _, predicted = torch.max(outputs, 1)
-            total_train += labels.size(0)
-            correct_train += (predicted == labels).sum().item()
-            
-            # Print batch info occasionally
-            if (batch_idx + 1) % 10 == 0 or (batch_idx + 1) == len(train_loader):
-                print(f"Epoch [{epoch+1}/{args.epochs}] | Batch [{batch_idx+1}/{len(train_loader)}] | Loss: {loss.item():.4f}")
-                
-        epoch_train_loss = running_loss / total_train
-        epoch_train_acc = (correct_train / total_train) * 100
-        
-        # --- Validation Phase ---
+
+            running_total += labels.size(0)
+
+            train_predictions.extend(
+                predicted.cpu().numpy()
+            )
+
+            train_targets.extend(
+                labels.cpu().numpy()
+            )
+
+        # -----------------------------
+        # Training Metrics
+        # -----------------------------
+
+        train_loss = running_loss / running_total
+
+        train_accuracy = accuracy_score(
+            train_targets,
+            train_predictions
+        ) * 100
+
+        history["train_loss"].append(train_loss)
+        history["train_accuracy"].append(train_accuracy)
+
+        print(f"Training Loss      : {train_loss:.4f}")
+        print(f"Training Accuracy  : {train_accuracy:.2f}%")
+
+        # ==========================================================
+        # Validation Phase
+        # ==========================================================
+
         model.eval()
-        running_val_loss = 0.0
-        correct_val = 0
-        total_val = 0
-        
-        val_preds = []
+
+        val_running_loss = 0.0
+        val_predictions = []
         val_targets = []
-        
+
         with torch.no_grad():
+
             for images, labels in val_loader:
-                images, labels = images.to(device), labels.to(device)
-                
+
+                images = images.to(device)
+                labels = labels.to(device)
+
                 outputs = model(images)
+
                 loss = criterion(outputs, labels)
-                
-                running_val_loss += loss.item() * images.size(0)
+
+                val_running_loss += loss.item() * images.size(0)
+
                 _, predicted = torch.max(outputs, 1)
-                total_val += labels.size(0)
-                correct_val += (predicted == labels).sum().item()
-                
-                val_preds.extend(predicted.cpu().numpy())
-                val_targets.extend(labels.cpu().numpy())
-                
-        epoch_val_loss = running_val_loss / total_val
-        epoch_val_acc = (correct_val / total_val) * 100
-        
-        # Calculate macro F1 (handles class imbalance evaluation properly)
-        epoch_val_f1 = f1_score(val_targets, val_preds, average='macro')
-        
-        # Update scheduler
-        scheduler.step(epoch_val_f1)
-        
-        # Save metrics history
-        history["train_loss"].append(epoch_train_loss)
-        history["train_acc"].append(epoch_train_acc)
-        history["val_loss"].append(epoch_val_loss)
-        history["val_acc"].append(epoch_val_acc)
-        history["val_f1"].append(epoch_val_f1)
-        
-        print(f"\n--- Epoch {epoch+1} Summary ---")
-        print(f"Train Loss: {epoch_train_loss:.4f} | Train Acc: {epoch_train_acc:.2f}%")
-        print(f"Val Loss:   {epoch_val_loss:.4f} | Val Acc:   {epoch_val_acc:.2f}% | Val F1 (Macro): {epoch_val_f1:.4f}")
-        
-        # Checkpoint based on F1-Score
-        if epoch_val_f1 > best_val_f1:
-            best_val_f1 = epoch_val_f1
+
+                val_predictions.extend(
+                    predicted.cpu().numpy()
+                )
+
+                val_targets.extend(
+                    labels.cpu().numpy()
+                )
+
+        # ---------------------------------
+        # Validation Metrics
+        # ---------------------------------
+
+        validation_loss = val_running_loss / len(val_loader.dataset)
+
+        validation_accuracy = accuracy_score(
+            val_targets,
+            val_predictions
+        ) * 100
+
+        validation_f1 = f1_score(
+            val_targets,
+            val_predictions,
+            average="macro"
+        )
+
+        history["validation_loss"].append(validation_loss)
+        history["validation_accuracy"].append(validation_accuracy)
+        history["validation_f1"].append(validation_f1)
+
+        print(f"Validation Loss     : {validation_loss:.4f}")
+        print(f"Validation Accuracy : {validation_accuracy:.2f}%")
+        print(f"Validation Macro F1 : {validation_f1:.4f}")
+
+        # ==========================================================
+        # Learning Rate Scheduler
+        # ==========================================================
+
+        scheduler.step(validation_f1)
+
+        # ==========================================================
+        # Save Best Model
+        # ==========================================================
+
+        if validation_f1 > best_val_f1:
+
+            best_val_f1 = validation_f1
+            best_epoch = epoch + 1
             patience_counter = 0
-            model_save_path = os.path.join(args.output_dir, args.model_save_name)
-            torch.save(model.state_dict(), model_save_path)
-            print(f"[Best Checkpoint] New best Val F1 ({best_val_f1:.4f})! Saved checkpoint to {model_save_path}")
+
+            torch.save(
+                model.state_dict(),
+                best_checkpoint_path
+            )
+
+            print("\n✓ New Best Model Saved!")
+            print(f"Best Validation F1 : {best_val_f1:.4f}")
+            print(f"Best Checkpoint Saved To : {best_checkpoint_path}")
+
         else:
+
             patience_counter += 1
-            print(f"No improvement in Val F1. Early stopping counter: {patience_counter}/{args.patience}")
-            
-        # Early Stopping check
+
+            print(
+                f"\nNo Improvement "
+                f"({patience_counter}/{args.patience})"
+            )
+        # Save latest model every epoch
+        torch.save(
+            model.state_dict(),
+            last_checkpoint_path
+        )
+
+        # ==========================================================
+        # Epoch Timing
+        # ==========================================================
+
+        epoch_time = time.time() - epoch_start
+
+        epoch_times.append(epoch_time)
+
+        print(f"Epoch Time : {epoch_time:.2f} sec")
+
+        # ==========================================================
+        # Early Stopping
+        # ==========================================================
+
         if patience_counter >= args.patience:
-            print(f"Early stopping triggered after {epoch+1} epochs.")
+
+            print("\nEarly Stopping Triggered.")
             break
-            
-    # Save training history as JSON
-    history_path = os.path.join(args.output_dir, "training_history.json")
-    with open(history_path, 'w') as f:
-        json.dump(history, f, indent=4)
-    print(f"Saved history stats to {history_path}")
+
+    # ==========================================================
+    # Training Finished
+    # ==========================================================
+
+    training_time = time.time() - training_start
+    average_epoch_time = np.mean(epoch_times) if epoch_times else 0
+
     
-    # 4. Generate & Save Plots
-    epochs_trained = range(1, len(history["train_loss"]) + 1)
+    print("Training Completed")
     
-    # Loss plot
-    plt.figure(figsize=(10, 5))
-    plt.plot(epochs_trained, history["train_loss"], 'bo-', label='Training Loss')
-    plt.plot(epochs_trained, history["val_loss"], 'ro-', label='Validation Loss')
-    plt.title('Training and Validation Loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
+
+    print(f"Best Epoch               : {best_epoch}")
+    print(f"Best Validation F1       : {best_val_f1:.4f}")
+    print(f"Total Training Time      : {training_time/60:.2f} minutes")
+    print(f"Average Epoch Time       : {average_epoch_time:.2f} seconds")
+    print(f"Best Checkpoint : {best_checkpoint_path}")
+    print(f"Last Checkpoint : {last_checkpoint_path}")  
+
+    # ==========================================================
+    # Save Training History
+    # ==========================================================
+
+    history_path = os.path.join(
+        folders["logs"],
+        "training_history.json"
+    )
+
+    save_json(history, history_path)
+
+    # ==========================================================
+    # Save Training Summary
+    # ==========================================================
+
+    training_summary = {
+
+        "model_name": args.model_name,
+
+        "best_epoch": best_epoch,
+
+        "best_validation_f1": float(best_val_f1),
+
+        "training_time_seconds": float(training_time),
+
+        "training_time_minutes": float(training_time / 60),
+
+        "average_epoch_time_seconds": float(average_epoch_time),
+
+        "total_parameters": total_params,
+
+        "trainable_parameters": trainable_params,
+
+        "total_epochs_completed": len(history["train_loss"])
+
+    }
+
+    save_json(
+
+        training_summary,
+
+        os.path.join(
+
+            folders["logs"],
+
+            "training_summary.json"
+
+        )
+
+    )
+
+    # ==========================================================
+    # Plot Loss Curve
+    # ==========================================================
+
+    plt.figure(figsize=(8,5))
+
+    plt.plot(
+        history["train_loss"],
+        label="Training Loss"
+    )
+
+    plt.plot(
+        history["validation_loss"],
+        label="Validation Loss"
+    )
+
+    plt.xlabel("Epoch")
+
+    plt.ylabel("Loss")
+
+    plt.title("Loss Curve")
+
     plt.grid(True)
-    loss_plot_path = os.path.join(args.output_dir, 'loss_curves.png')
-    plt.savefig(loss_plot_path)
-    plt.close()
-    
-    # Accuracy & F1 plot
-    plt.figure(figsize=(10, 5))
-    plt.plot(epochs_trained, history["train_acc"], 'b--', label='Training Acc (%)')
-    plt.plot(epochs_trained, history["val_acc"], 'r--', label='Validation Acc (%)')
-    plt.plot(epochs_trained, [f * 100 for f in history["val_f1"]], 'g-', label='Val F1 (Macro x100)')
-    plt.title('Accuracy and F1 Score')
-    plt.xlabel('Epochs')
-    plt.ylabel('Percentage')
+
     plt.legend()
-    plt.grid(True)
-    metrics_plot_path = os.path.join(args.output_dir, 'metrics_curves.png')
-    plt.savefig(metrics_plot_path)
+
+    plt.tight_layout()
+
+    plt.savefig(
+
+        os.path.join(
+
+            folders["plots"],
+
+            "loss_curve.png"
+
+        )
+
+    )
+
     plt.close()
-    
-    print(f"Plots saved to {args.output_dir}/")
-    print("Training Complete!")
-    return model_save_path
+
+    # ==========================================================
+    # Plot Accuracy Curve
+    # ==========================================================
+
+    plt.figure(figsize=(8,5))
+
+    plt.plot(
+        history["train_accuracy"],
+        label="Training Accuracy"
+    )
+
+    plt.plot(
+        history["validation_accuracy"],
+        label="Validation Accuracy"
+    )
+
+    plt.xlabel("Epoch")
+
+    plt.ylabel("Accuracy (%)")
+
+    plt.title("Accuracy Curve")
+
+    plt.grid(True)
+
+    plt.legend()
+
+    plt.tight_layout()
+
+    plt.savefig(
+
+        os.path.join(
+
+            folders["plots"],
+
+            "accuracy_curve.png"
+
+        )
+
+    )
+
+    plt.close()
+
+    # ==========================================================
+    # Plot Validation F1
+    # ==========================================================
+
+    plt.figure(figsize=(8,5))
+
+    plt.plot(
+
+        history["validation_f1"],
+
+        color="green",
+
+        linewidth=2
+
+    )
+
+    plt.xlabel("Epoch")
+
+    plt.ylabel("Macro F1")
+
+    plt.title("Validation Macro F1")
+
+    plt.grid(True)
+
+    plt.tight_layout()
+
+    plt.savefig(
+
+        os.path.join(
+
+            folders["plots"],
+
+            "validation_f1.png"
+
+        )
+
+    )
+
+    plt.close()
+
+    print("\nTraining history saved.")
+
+    print("Plots saved.")
+
+    print("Training summary saved.")
+
+    return best_checkpoint_path
+
+# ==========================================================
+# Main
+# ==========================================================
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train Cervical Cancer Model")
-    parser.add_argument("--data_dir", type=str, default="D:/MSC AI/Split_Data", help="Path to Split_Data directory")
-    parser.add_argument("--output_dir", type=str, default="D:/MSC AI/cervical_classifier/outputs", help="Directory to save weights and logs")
-    parser.add_argument("--model_save_name", type=str, default="best_cervical_model.pth", help="Filename of the saved checkpoint")
-    parser.add_argument("--model_name", type=str, default="efficientnet_b0", help="Model backbone (efficientnet_b0, resnet18, resnet50)")
-    parser.add_argument("--epochs", type=int, default=10, help="Number of training epochs")
-    parser.add_argument("--batch_size", type=int, default=32, help="DataLoader batch size")
-    parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
-    parser.add_argument("--weight_decay", type=float, default=1e-5, help="L2 regularization weight decay")
-    parser.add_argument("--patience", type=int, default=5, help="Early stopping patience epochs")
-    parser.add_argument("--freeze_backbone", action="store_true", help="Freeze the model's pretrained backbone layers")
-    parser.add_argument("--no_pretrained", action="store_true", help="Train from scratch (do not use ImageNet pretrained weights)")
-    
+
+    parser = argparse.ArgumentParser(
+        description="Train Cervical Cancer Classification Model"
+    )
+
+    parser.add_argument(
+        "--data_dir",
+        type=str,
+        default="Split_Data",
+        help="Dataset directory"
+    )
+
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="benchmark_results",
+        help="Output directory"
+    )
+
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        default="efficientnet_b0",
+        help="Model architecture"
+    )
+
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=20
+    )
+
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=32
+    )
+
+    parser.add_argument(
+        "--lr",
+        type=float,
+        default=0.0001
+    )
+
+    parser.add_argument(
+        "--weight_decay",
+        type=float,
+        default=1e-4
+    )
+
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=5
+    )
+
+    parser.add_argument(
+        "--freeze_backbone",
+        action="store_true"
+    )
+
+    parser.add_argument(
+        "--no_pretrained",
+        action="store_true"
+    )
+
     args = parser.parse_args()
+
     train_model(args)

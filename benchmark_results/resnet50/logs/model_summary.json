@@ -1,0 +1,11 @@
+{
+    "model_name": "resnet50",
+    "display_name": "ResNet50",
+    "category": "Heavy",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 23516228,
+    "trainable_parameters": 23516228
+}

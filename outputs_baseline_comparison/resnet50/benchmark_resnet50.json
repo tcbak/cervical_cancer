@@ -1,0 +1,16 @@
+{
+  "model_name": "resnet50",
+  "input_size": "224x224",
+  "total_params": 23516228,
+  "trainable_params": 23516228,
+  "total_params_millions": 23.516,
+  "model_size_mb": 90.009,
+  "macs": null,
+  "macs_millions": null,
+  "flops_millions": null,
+  "cpu_latency_ms": 89.99,
+  "cpu_throughput_fps": 11.11,
+  "gpu_latency_ms": null,
+  "gpu_throughput_fps": null,
+  "gpu_peak_mem_mb": null
+}

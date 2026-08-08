@@ -1,0 +1,11 @@
+{
+    "model_name": "shufflenet_v2_x1_0",
+    "best_epoch": 9,
+    "best_validation_f1": 0.2483011079307592,
+    "training_time_seconds": 1331.6084644794464,
+    "training_time_minutes": 22.193474407990774,
+    "average_epoch_time_seconds": 95.11462260995593,
+    "total_parameters": 1257704,
+    "trainable_parameters": 1257704,
+    "total_epochs_completed": 14
+}

@@ -8,22 +8,26 @@ import cv2
 import matplotlib.pyplot as plt
 
 from dataset import get_transforms
-from model import get_model
+from model import get_model, get_input_size
 from explainability import create_explainability_overlay
+
 
 def run_prediction(args):
     # Setup directories
     os.makedirs(args.output_dir, exist_ok=True)
-    
+
     # Device configuration
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     # 1. Image loading and transform configuration
     if not os.path.exists(args.image_path):
         raise FileNotFoundError(f"Target image not found: {args.image_path}")
-        
-    _, val_test_transform = get_transforms(img_size=(224, 224))
-    
+
+    # Resolve the correct input resolution for this backbone
+    img_size = get_input_size(args.model_name)
+    print(f"Using input resolution {img_size} for model '{args.model_name}'")
+    _, val_test_transform = get_transforms(img_size=img_size)
+
     # 2. Build and load model
     classes = ['CIN1', 'CIN2', 'CIN3', 'Normal']
     model = get_model(
@@ -31,15 +35,15 @@ def run_prediction(args):
         model_name=args.model_name,
         pretrained=False
     )
-    
+
     if not os.path.exists(args.model_path):
         raise FileNotFoundError(f"Model checkpoint weights not found: {args.model_path}")
-        
+
     state_dict = torch.load(args.model_path, map_location=device)
     model.load_state_dict(state_dict)
     model = model.to(device)
     model.eval()
-    
+
     # 3. Generate XAI and localization overlays
     print(f"\nProcessing image: {args.image_path}...")
     result = create_explainability_overlay(
@@ -50,13 +54,13 @@ def run_prediction(args):
         device=device,
         threshold=args.threshold
     )
-    
+
     pred_class = classes[result["pred_idx"]]
     confidence = result["confidence"]
     bbox = result["bbox"]
-    
+
     print(f"\nPredicted Diagnosis : {pred_class}  |  Confidence: {confidence * 100:.2f}%")
-    
+
     # 4. Swede Score Calculation
     # ------------------------------------------------------------------
     # COMPONENT SOURCE LEGEND:
@@ -67,12 +71,10 @@ def run_prediction(args):
     #                     CIN grade as defined in colposcopy guidelines.
     #   [GRAD-CAM EST.] : Value dynamically estimated from the spatial area
     #                     coverage of the thresholded Grad-CAM activation
-    #                     mask — the only image-derived Swede component.
+    #                     mask -- the only image-derived Swede component.
     # ------------------------------------------------------------------
 
     # --- [GRAD-CAM EST.] Lesion Size Score ---
-    # Computed from the proportion of the image covered by the thresholded
-    # Grad-CAM heatmap (threshold tau = args.threshold).
     heatmap = result["heatmap"]
     mask = heatmap > args.threshold
     lesion_pct = (np.sum(mask) / heatmap.size) * 100
@@ -85,8 +87,6 @@ def run_prediction(args):
     # else:                  # <5%  coverage  -> score 0
 
     # --- [RULE-BASED] Acetowhiteness, Margins, Vessels, Iodine ---
-    # Fixed lookup table mapping predicted class label to prototype scores.
-    # Source: standard colposcopy Swede Score criteria per CIN grade.
     SWEDE_LOOKUP = {
         'Normal': (0, 0, 0, 0),
         'CIN1':   (1, 0, 0, 1),
@@ -157,36 +157,14 @@ def run_prediction(args):
     with open(report_path, "w") as rf:
         rf.write(report_text + "\n")
     print(f"Saved clinical report to: {report_path}")
-    
-    # 5. Save multi-panel visualization (4-panel with Swede score breakdown)
-    fig = plt.figure(figsize=(22, 6))
-    fig.suptitle(
-        f"CerviScan AI — {pred_class}  |  Confidence: {confidence * 100:.2f}%  |  "
-        f"Swede Score: {total_swede_score}/10  [{risk_tag} RISK]",
-        fontsize=13, fontweight='bold', y=1.01
-    )
 
-    ax0 = fig.add_subplot(1, 4, 1)
-    ax0.imshow(result["original"])
-    ax0.set_title("Original Image", fontsize=11)
-    ax0.axis('off')
-
-    ax1 = fig.add_subplot(1, 4, 2)
-    ax1.imshow(result["heatmap"], cmap='jet')
-    ax1.set_title(f"Grad-CAM Heatmap\nCoverage: {lesion_pct:.1f}%", fontsize=11)
-    ax1.axis('off')
-
-    ax2 = fig.add_subplot(1, 4, 3)
-    ax2.imshow(result["annotated"])
-    ax2.set_title(f"Lesion Localization", fontsize=11)
-    ax2.axis('off')
-
-    # Standalone Panel: Save Swede score bar chart separately
-    fig_bar, ax_bar = plt.subplots(figsize=(6, 5))
+    # 5. Save standalone Swede score bar chart
     components      = ['Aceto\nwhite', 'Margins\nSurface', 'Vessel\nPattern', 'Iodine\nStaining', 'Lesion\nSize']
     scores          = [aceto, margin, vessels, iodine, suggested_size]
     source_labels   = ['Rule-\nbased', 'Rule-\nbased', 'Rule-\nbased', 'Rule-\nbased', 'Grad-CAM\nEst.']
     bar_colors      = ['#2e7d32', '#2e7d32', '#2e7d32', '#2e7d32', '#d84315']
+
+    fig_bar, ax_bar = plt.subplots(figsize=(6, 5))
     bars_std = ax_bar.bar(components, scores, color=bar_colors, edgecolor='white', linewidth=1.2)
     ax_bar.set_ylim(0, 2.5)
     ax_bar.set_yticks([0, 1, 2])
@@ -210,7 +188,7 @@ def run_prediction(args):
     plt.close()
     print(f"Saved standalone Swede bar chart to: {bar_output_path}")
 
-    # 5. Save multi-panel visualization (4-panel with Swede score breakdown)
+    # 6. Save multi-panel visualization (4-panel with Swede score breakdown)
     fig = plt.figure(figsize=(22, 6))
     fig.suptitle(
         f"CerviScan AI — {pred_class}  |  Confidence: {confidence * 100:.2f}%  |  "
@@ -256,6 +234,7 @@ def run_prediction(args):
 
     print(f"Saved explainability visual analysis to: {output_path}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Predict Cervical Cancer stage and localize lesion region")
     parser.add_argument("--image_path", type=str, required=True, help="Path to cervical/colposcopy image file")
@@ -263,6 +242,6 @@ if __name__ == "__main__":
     parser.add_argument("--model_name", type=str, default="efficientnet_b0", help="Model architecture")
     parser.add_argument("--output_dir", type=str, default="D:/MSC AI/cervical_classifier/outputs_corrected", help="Directory to save corrected outputs (image + report)")
     parser.add_argument("--threshold", type=float, default=0.4, help="Activation threshold for lesion boundary segmentation")
-    
+
     args = parser.parse_args()
     run_prediction(args)

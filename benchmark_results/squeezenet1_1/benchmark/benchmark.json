@@ -1,0 +1,20 @@
+{
+    "model_name": "squeezenet1_1",
+    "display_name": "SqueezeNet1.1",
+    "category": "Ultra-Lightweight",
+    "date": "2026-08-07 13:26:53.451244",
+    "input_size": "224x224",
+    "benchmark_time_seconds": 0.81,
+    "total_parameters": 724548,
+    "trainable_parameters": 724548,
+    "total_parameters_million": 0.725,
+    "model_size_mb": 2.783,
+    "macs": 262970728.0,
+    "macs_million": 262.97,
+    "flops_million": 525.94,
+    "cpu_latency_ms": 12.058,
+    "cpu_throughput_fps": 82.93,
+    "gpu_latency_ms": null,
+    "gpu_throughput_fps": null,
+    "gpu_peak_memory_mb": null
+}

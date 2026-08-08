@@ -1,0 +1,11 @@
+{
+    "model_name": "densenet121",
+    "display_name": "DenseNet121",
+    "category": "Medium",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 6957956,
+    "trainable_parameters": 6957956
+}

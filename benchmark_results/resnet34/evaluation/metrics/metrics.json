@@ -1,0 +1,13 @@
+{
+    "model_name": "resnet34",
+    "num_classes": 4,
+    "num_test_images": 632,
+    "accuracy": 0.9873,
+    "precision": 0.8972,
+    "recall": 0.9501,
+    "macro_f1": 0.9147,
+    "weighted_f1": 0.9881,
+    "macro_auc": 0.9948,
+    "test_loss": 0.0512,
+    "evaluation_time_seconds": 28.02
+}

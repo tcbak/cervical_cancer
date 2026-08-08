@@ -1,0 +1,18 @@
+{
+    "CIN1": {
+        "sensitivity": 0.8095,
+        "specificity": 0.6858
+    },
+    "CIN2": {
+        "sensitivity": 1.0,
+        "specificity": 0.402
+    },
+    "CIN3": {
+        "sensitivity": 1.0,
+        "specificity": 0.9612
+    },
+    "Normal": {
+        "sensitivity": 0.0,
+        "specificity": 1.0
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "model_name": "vgg16",
+    "num_classes": 4,
+    "num_test_images": 632,
+    "accuracy": 0.9953,
+    "precision": 0.9548,
+    "recall": 0.9752,
+    "macro_f1": 0.9636,
+    "weighted_f1": 0.9953,
+    "macro_auc": 0.9996,
+    "test_loss": 0.0304,
+    "evaluation_time_seconds": 79.99
+}

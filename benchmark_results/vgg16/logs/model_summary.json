@@ -1,0 +1,11 @@
+{
+    "model_name": "vgg16",
+    "display_name": "VGG16",
+    "category": "Heavy",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 134276932,
+    "trainable_parameters": 134276932
+}

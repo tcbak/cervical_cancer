@@ -1,0 +1,13 @@
+{
+    "model_name": "mobilenet_v2",
+    "num_classes": 4,
+    "num_test_images": 632,
+    "accuracy": 0.9462,
+    "precision": 0.694,
+    "recall": 0.9279,
+    "macro_f1": 0.776,
+    "weighted_f1": 0.9525,
+    "macro_auc": 0.993,
+    "test_loss": 0.2191,
+    "evaluation_time_seconds": 19.43
+}

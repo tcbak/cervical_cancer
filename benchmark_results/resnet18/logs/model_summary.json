@@ -1,0 +1,11 @@
+{
+    "model_name": "resnet18",
+    "display_name": "ResNet18",
+    "category": "Medium",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 11178564,
+    "trainable_parameters": 11178564
+}

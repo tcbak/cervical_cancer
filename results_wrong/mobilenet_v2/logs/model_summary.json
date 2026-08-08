@@ -1,0 +1,11 @@
+{
+    "model_name": "mobilenet_v2",
+    "display_name": "MobileNetV2",
+    "category": "Lightweight",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 2228996,
+    "trainable_parameters": 2228996
+}

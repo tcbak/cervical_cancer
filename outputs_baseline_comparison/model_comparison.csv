@@ -1,0 +1,9 @@
+model_name,cpu_latency_ms,cpu_throughput_fps,flops_millions,gpu_latency_ms,gpu_peak_mem_mb,gpu_throughput_fps,input_size,macs_millions,model_size_mb,total_params_millions
+densenet121,94.569,10.57,,,,,224x224,,27.116,6.958
+efficientnet_b0,59.862,16.71,,,,,224x224,,15.59,4.013
+inception_v3,126.16,7.93,,,,,299x299,,83.453,21.794
+mobilenet_v2,31.355,31.89,,,,,224x224,,8.735,2.229
+resnet18,36.938,27.07,,,,,224x224,,42.718,11.179
+resnet50,89.99,11.11,,,,,224x224,,90.009,23.516
+shufflenet_v2_x1_0,22.039,45.37,,,,,224x224,,4.961,1.258
+vgg16,197.197,5.07,,,,,224x224,,512.237,134.277

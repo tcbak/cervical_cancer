@@ -1,0 +1,16 @@
+{
+  "model_name": "resnet18",
+  "input_size": "224x224",
+  "total_params": 11178564,
+  "trainable_params": 11178564,
+  "total_params_millions": 11.179,
+  "model_size_mb": 42.718,
+  "macs": null,
+  "macs_millions": null,
+  "flops_millions": null,
+  "cpu_latency_ms": 36.938,
+  "cpu_throughput_fps": 27.07,
+  "gpu_latency_ms": null,
+  "gpu_throughput_fps": null,
+  "gpu_peak_mem_mb": null
+}

@@ -1,0 +1,13 @@
+{
+    "model_name": "shufflenet_v2_x1_0",
+    "num_classes": 4,
+    "num_test_images": 632,
+    "accuracy": 0.0791,
+    "precision": 0.1211,
+    "recall": 0.7024,
+    "macro_f1": 0.1916,
+    "weighted_f1": 0.0187,
+    "macro_auc": 0.9539,
+    "test_loss": 1.4528,
+    "evaluation_time_seconds": 8.96
+}

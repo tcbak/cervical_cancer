@@ -1,0 +1,11 @@
+{
+    "model_name": "mobilenet_v2",
+    "best_epoch": 18,
+    "best_validation_f1": 0.8920416539981758,
+    "training_time_seconds": 4412.670508146286,
+    "training_time_minutes": 73.54450846910477,
+    "average_epoch_time_seconds": 220.63331414461135,
+    "total_parameters": 2228996,
+    "trainable_parameters": 2228996,
+    "total_epochs_completed": 20
+}

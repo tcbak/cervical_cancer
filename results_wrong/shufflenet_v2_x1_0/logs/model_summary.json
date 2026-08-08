@@ -1,0 +1,11 @@
+{
+    "model_name": "shufflenet_v2_x1_0",
+    "display_name": "ShuffleNetV2 x1.0",
+    "category": "Ultra-Lightweight",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 1257704,
+    "trainable_parameters": 1257704
+}

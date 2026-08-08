@@ -1,0 +1,11 @@
+{
+    "model_name": "vgg16",
+    "best_epoch": 15,
+    "best_validation_f1": 0.9392230576441103,
+    "training_time_seconds": 19204.099123239517,
+    "training_time_minutes": 320.0683187206586,
+    "average_epoch_time_seconds": 960.2047352552414,
+    "total_parameters": 134276932,
+    "trainable_parameters": 134276932,
+    "total_epochs_completed": 20
+}

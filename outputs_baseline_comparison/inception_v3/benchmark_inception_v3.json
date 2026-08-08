@@ -1,0 +1,16 @@
+{
+  "model_name": "inception_v3",
+  "input_size": "299x299",
+  "total_params": 21793764,
+  "trainable_params": 21793764,
+  "total_params_millions": 21.794,
+  "model_size_mb": 83.453,
+  "macs": null,
+  "macs_millions": null,
+  "flops_millions": null,
+  "cpu_latency_ms": 126.16,
+  "cpu_throughput_fps": 7.93,
+  "gpu_latency_ms": null,
+  "gpu_throughput_fps": null,
+  "gpu_peak_mem_mb": null
+}

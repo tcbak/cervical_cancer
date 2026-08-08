@@ -1,0 +1,11 @@
+{
+    "model_name": "efficientnet_b0",
+    "best_epoch": 20,
+    "best_validation_f1": 0.9438644688644688,
+    "training_time_seconds": 5441.786540746689,
+    "training_time_minutes": 90.69644234577815,
+    "average_epoch_time_seconds": 272.08906599283216,
+    "total_parameters": 4012672,
+    "trainable_parameters": 4012672,
+    "total_epochs_completed": 20
+}

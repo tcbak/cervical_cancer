@@ -1,0 +1,13 @@
+{
+    "model_name": "squeezenet1_1",
+    "num_classes": 4,
+    "num_test_images": 632,
+    "accuracy": 0.8845,
+    "precision": 0.6277,
+    "recall": 0.9219,
+    "macro_f1": 0.6948,
+    "weighted_f1": 0.9124,
+    "macro_auc": 0.9933,
+    "test_loss": 0.6137,
+    "evaluation_time_seconds": 11.33
+}

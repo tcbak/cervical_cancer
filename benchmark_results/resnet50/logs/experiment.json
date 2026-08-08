@@ -1,0 +1,18 @@
+{
+    "model_name": "resnet50",
+    "display_name": "ResNet50",
+    "category": "Heavy",
+    "epochs": 20,
+    "batch_size": 32,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "patience": 5,
+    "pretrained": true,
+    "freeze_backbone": false,
+    "input_size": [
+        224,
+        224
+    ],
+    "device": "cpu",
+    "date": "2026-08-07 17:53:37.263798"
+}

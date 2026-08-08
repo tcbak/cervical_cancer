@@ -1,0 +1,11 @@
+{
+    "model_name": "squeezenet1_1",
+    "display_name": "SqueezeNet1.1",
+    "category": "Ultra-Lightweight",
+    "input_size": [
+        224,
+        224
+    ],
+    "total_parameters": 724548,
+    "trainable_parameters": 724548
+}

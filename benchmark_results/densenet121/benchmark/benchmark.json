@@ -1,0 +1,20 @@
+{
+    "model_name": "densenet121",
+    "display_name": "DenseNet121",
+    "category": "Medium",
+    "date": "2026-08-07 16:06:29.301773",
+    "input_size": "224x224",
+    "benchmark_time_seconds": 4.67,
+    "total_parameters": 6957956,
+    "trainable_parameters": 6957956,
+    "total_parameters_million": 6.958,
+    "model_size_mb": 27.116,
+    "macs": 2895987200.0,
+    "macs_million": 2895.99,
+    "flops_million": 5791.97,
+    "cpu_latency_ms": 70.891,
+    "cpu_throughput_fps": 14.11,
+    "gpu_latency_ms": null,
+    "gpu_throughput_fps": null,
+    "gpu_peak_memory_mb": null
+}

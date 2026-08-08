@@ -1,0 +1,11 @@
+{
+    "model_name": "squeezenet1_1",
+    "best_epoch": 18,
+    "best_validation_f1": 0.737678298534734,
+    "training_time_seconds": 1950.3308734893799,
+    "training_time_minutes": 32.50551455815633,
+    "average_epoch_time_seconds": 97.51633489131927,
+    "total_parameters": 724548,
+    "trainable_parameters": 724548,
+    "total_epochs_completed": 20
+}

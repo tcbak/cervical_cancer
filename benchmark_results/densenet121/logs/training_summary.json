@@ -1,0 +1,11 @@
+{
+    "model_name": "densenet121",
+    "best_epoch": 19,
+    "best_validation_f1": 0.9132467769803296,
+    "training_time_seconds": 9489.245310306549,
+    "training_time_minutes": 158.15408850510914,
+    "average_epoch_time_seconds": 474.46205337047576,
+    "total_parameters": 6957956,
+    "trainable_parameters": 6957956,
+    "total_epochs_completed": 20
+}

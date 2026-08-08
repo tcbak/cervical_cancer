@@ -1,0 +1,20 @@
+{
+    "model_name": "resnet34",
+    "display_name": "ResNet34",
+    "category": "Medium",
+    "date": "2026-08-07 17:53:31.377006",
+    "input_size": "224x224",
+    "benchmark_time_seconds": 3.63,
+    "total_parameters": 21286724,
+    "trainable_parameters": 21286724,
+    "total_parameters_million": 21.287,
+    "model_size_mb": 81.335,
+    "macs": 3678229504.0,
+    "macs_million": 3678.23,
+    "flops_million": 7356.46,
+    "cpu_latency_ms": 52.687,
+    "cpu_throughput_fps": 18.98,
+    "gpu_latency_ms": null,
+    "gpu_throughput_fps": null,
+    "gpu_peak_memory_mb": null
+}
