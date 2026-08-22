@@ -236,12 +236,45 @@ def run_prediction(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Predict Cervical Cancer stage and localize lesion region")
-    parser.add_argument("--image_path", type=str, required=True, help="Path to cervical/colposcopy image file")
-    parser.add_argument("--model_path", type=str, default="D:/MSC AI/cervical_model.pth", help="Path to trained .pth weights")
-    parser.add_argument("--model_name", type=str, default="efficientnet_b0", help="Model architecture")
-    parser.add_argument("--output_dir", type=str, default="D:/MSC AI/cervical_classifier/outputs_corrected", help="Directory to save corrected outputs (image + report)")
-    parser.add_argument("--threshold", type=float, default=0.4, help="Activation threshold for lesion boundary segmentation")
+    parser = argparse.ArgumentParser(
+        description="Predict Cervical Cancer stage and localize lesion region"
+    )
+
+    parser.add_argument(
+        "--image_path",
+        type=str,
+        required=True,
+        help="Path to cervical/colposcopy image file"
+    )
+
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        default="benchmark_results/efficientnet_b0/checkpoints/best_model.pth",
+        help="Path to the selected EfficientNet-B0 checkpoint"
+    )
+
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        default="efficientnet_b0",
+        help="Model architecture"
+    )
+
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="benchmark_results/efficientnet_b0/final_prediction",
+        help="Directory to save final prediction and explainability outputs"
+    )
+
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.4,
+        help="Activation threshold for lesion boundary segmentation"
+    )
 
     args = parser.parse_args()
+
     run_prediction(args)

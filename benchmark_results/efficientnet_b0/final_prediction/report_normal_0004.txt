@@ -1,0 +1,25 @@
+==================================================
+            DIAGNOSTIC REPORT
+==================================================
+Predicted Diagnosis : Normal
+Confidence Score    : 92.30%
+
+--- Automated Swede Score ---
+  Grad-CAM Lesion Coverage  : 100.0% of image
+
+  Swede Component                 Score   Source
+  ----------------------------------------------
+  Acetowhiteness (0-2)         :   0     [RULE-BASED]
+  Margins / Surface  (0-2)     :   0     [RULE-BASED]
+  Vessel Patterns    (0-2)     :   0     [RULE-BASED]
+  Iodine Staining    (0-2)     :   0     [RULE-BASED]
+  Lesion Size Score  (0-2)     :   2     [GRAD-CAM EST.]
+  ----------------------------------------------
+  Total Swede Score            :   2 / 10
+
+Risk Level          : LOW
+Action Protocol     : Low Risk: Likely Normal or low-grade. Routine follow-up per protocol.
+
+--- Cancer/Lesion Localization ---
+  Bounding Box: [X: 0, Y: 0, Width: 640, Height: 480]
+==================================================

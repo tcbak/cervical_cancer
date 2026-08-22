@@ -6,9 +6,7 @@ import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-# ==========================================================
 # Project Paths
-# ==========================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
@@ -35,7 +33,7 @@ def get_transforms(img_size=(224, 224)):
             degrees=0,
             translate=(0.1, 0.1)
         ),
-        transforms.ToTensor(),
+        transforms.ToTensor(), #transform image format (IPEG/PNG) to numerical tensors as neural network doesn't work with image formats
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225]
