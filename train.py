@@ -24,9 +24,9 @@ from model import (
     get_model_info
 )
 
-# ==========================================================
+
 # Reproducibility
-# ==========================================================
+
 
 def set_seed(seed=42):
     """
@@ -44,9 +44,9 @@ def set_seed(seed=42):
     torch.backends.cudnn.benchmark = False
 
 
-# ==========================================================
+
 # Helper Functions
-# ==========================================================
+
 
 def count_parameters(model):
     """
@@ -70,9 +70,9 @@ def save_json(data, filename):
         json.dump(data, f, indent=4)
 
 
-# ==========================================================
+
 # Experiment Folder Creation
-# ==========================================================
+
 
 def create_experiment_folders(root_dir, model_name):
 
@@ -114,9 +114,9 @@ def create_experiment_folders(root_dir, model_name):
     return folders
 
 
-# ==========================================================
+
 # Training Function
-# ==========================================================
+
 
 def train_model(args):
 
@@ -214,9 +214,9 @@ def train_model(args):
 
     num_classes = len(class_names)
 
-    # ==========================================================
+    
     # Build Model
-    # ==========================================================
+    
 
     print("\nBuilding Model...")
 
@@ -252,9 +252,9 @@ def train_model(args):
         )
     )
 
-    # ==========================================================
+    
     # Loss Function
-    # ==========================================================
+    
 
     print("\nInitializing Loss Function...")
 
@@ -264,9 +264,9 @@ def train_model(args):
         weight=loss_weights
     )
 
-    # ==========================================================
+    
     # Optimizer
-    # ==========================================================
+   
 
     optimizer = optim.Adam(
 
@@ -278,9 +278,9 @@ def train_model(args):
 
     )
 
-    # ==========================================================
+    
     # Learning Rate Scheduler
-    # ==========================================================
+   
 
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
 
@@ -294,9 +294,9 @@ def train_model(args):
 
     )
 
-    # ==========================================================
+    
     # Checkpoint Paths
-    # ==========================================================
+   
 
     best_checkpoint_path = os.path.join(
         folders["checkpoints"],
@@ -307,9 +307,9 @@ def train_model(args):
         folders["checkpoints"],
         "last_model.pth"
     )
-    # ==========================================================
+    
     # Training History
-    # ==========================================================
+    
 
     history = {
 
@@ -331,9 +331,9 @@ def train_model(args):
 
     patience_counter = 0
 
-    # ==========================================================
+    
     # Training Timer
-    # ==========================================================
+   
 
     training_start = time.time()
 
@@ -342,9 +342,9 @@ def train_model(args):
     
     print("Starting Training")
 
-    # ==========================================================
+    
     # Training Loop
-    # ==========================================================
+    
 
     for epoch in range(args.epochs):
 
@@ -354,9 +354,9 @@ def train_model(args):
 
         epoch_start = time.time()
 
-        # -----------------------------
+       
         # Training Phase
-        # -----------------------------
+        
         model.train()
 
         running_loss = 0.0
@@ -380,9 +380,9 @@ def train_model(args):
 
             optimizer.step()
 
-            # -----------------------------
+          
             # Statistics
-            # -----------------------------
+            
             running_loss += loss.item() * images.size(0)
 
             _, predicted = torch.max(outputs, 1)
@@ -397,9 +397,9 @@ def train_model(args):
                 labels.cpu().numpy()
             )
 
-        # -----------------------------
+        
         # Training Metrics
-        # -----------------------------
+        
 
         train_loss = running_loss / running_total
 
@@ -414,9 +414,9 @@ def train_model(args):
         print(f"Training Loss      : {train_loss:.4f}")
         print(f"Training Accuracy  : {train_accuracy:.2f}%")
 
-        # ==========================================================
+        
         # Validation Phase
-        # ==========================================================
+        
 
         model.eval()
 
@@ -447,9 +447,9 @@ def train_model(args):
                     labels.cpu().numpy()
                 )
 
-        # ---------------------------------
+        
         # Validation Metrics
-        # ---------------------------------
+        
 
         validation_loss = val_running_loss / len(val_loader.dataset)
 
@@ -472,15 +472,15 @@ def train_model(args):
         print(f"Validation Accuracy : {validation_accuracy:.2f}%")
         print(f"Validation Macro F1 : {validation_f1:.4f}")
 
-        # ==========================================================
+      
         # Learning Rate Scheduler
-        # ==========================================================
+        
 
         scheduler.step(validation_f1)
 
-        # ==========================================================
+        
         # Save Best Model
-        # ==========================================================
+        
 
         if validation_f1 > best_val_f1:
 
@@ -510,10 +510,8 @@ def train_model(args):
             model.state_dict(),
             last_checkpoint_path
         )
-
-        # ==========================================================
         # Epoch Timing
-        # ==========================================================
+       
 
         epoch_time = time.time() - epoch_start
 
@@ -521,18 +519,18 @@ def train_model(args):
 
         print(f"Epoch Time : {epoch_time:.2f} sec")
 
-        # ==========================================================
+        
         # Early Stopping
-        # ==========================================================
+        
 
         if patience_counter >= args.patience:
 
             print("\nEarly Stopping Triggered.")
             break
 
-    # ==========================================================
+    
     # Training Finished
-    # ==========================================================
+    
 
     training_time = time.time() - training_start
     average_epoch_time = np.mean(epoch_times) if epoch_times else 0
@@ -548,9 +546,9 @@ def train_model(args):
     print(f"Best Checkpoint : {best_checkpoint_path}")
     print(f"Last Checkpoint : {last_checkpoint_path}")  
 
-    # ==========================================================
+   
     # Save Training History
-    # ==========================================================
+    
 
     history_path = os.path.join(
         folders["logs"],
@@ -559,9 +557,9 @@ def train_model(args):
 
     save_json(history, history_path)
 
-    # ==========================================================
+    #
     # Save Training Summary
-    # ==========================================================
+    
 
     training_summary = {
 
@@ -599,9 +597,9 @@ def train_model(args):
 
     )
 
-    # ==========================================================
+    
     # Plot Loss Curve
-    # ==========================================================
+    
 
     plt.figure(figsize=(8,5))
 
@@ -641,9 +639,9 @@ def train_model(args):
 
     plt.close()
 
-    # ==========================================================
+    
     # Plot Accuracy Curve
-    # ==========================================================
+    
 
     plt.figure(figsize=(8,5))
 
@@ -683,9 +681,9 @@ def train_model(args):
 
     plt.close()
 
-    # ==========================================================
+    
     # Plot Validation F1
-    # ==========================================================
+    
 
     plt.figure(figsize=(8,5))
 
@@ -731,9 +729,9 @@ def train_model(args):
 
     return best_checkpoint_path
 
-# ==========================================================
+
 # Main
-# ==========================================================
+
 
 if __name__ == "__main__":
 

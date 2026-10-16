@@ -63,9 +63,7 @@ def measure_latency(model, input_tensor, device, n_warmup=10, n_runs=50):
     throughput_fps = 1000.0 / avg_latency_ms
     return avg_latency_ms, throughput_fps
 
-# ==========================================================
 # Helper Functions
-# ==========================================================
 
 def save_json(data, filename):
     """

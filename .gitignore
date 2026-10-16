@@ -76,3 +76,7 @@ htmlcov/
 
 *.pickle
 *.pkl
+
+#zip files of the datsets
+# Large original datasets
+original_datasets/*.zip

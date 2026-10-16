@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
-DEFAULT_DATA_DIR = PROJECT_ROOT / "Split_Data"
+DEFAULT_DATA_DIR = PROJECT_ROOT / "Split_Data_PatientWise"
 
 
 def get_transforms(img_size=(224, 224)):
@@ -57,27 +57,17 @@ def get_dataloaders(
         batch_size=32,
         img_size=(224, 224)
 ):
-    """
-    Loads ImageFolder datasets and configures balanced DataLoaders.
-
-    Returns
-    -------
-    train_loader
-    val_loader
-    test_loader
-    class_names
-    class_weights_tensor
-    """
+   
 
     data_dir = Path(data_dir)
 
-    train_dir = data_dir / "train"
-    val_dir = data_dir / "val"
-    test_dir = data_dir / "test"
+    train_dir = data_dir / "Train"
+    val_dir = data_dir / "Validation"
+    test_dir = data_dir / "Test"
 
-    # ------------------------------------------------------
+    
     # Verify dataset folders exist
-    # ------------------------------------------------------
+   
 
     for folder in [train_dir, val_dir, test_dir]:
         if not folder.exists():
@@ -87,9 +77,9 @@ def get_dataloaders(
 
     train_transform, val_test_transform = get_transforms(img_size)
 
-    # ------------------------------------------------------
+    
     # ImageFolder datasets
-    # ------------------------------------------------------
+    
 
     train_dataset = datasets.ImageFolder(
         train_dir,
@@ -108,9 +98,9 @@ def get_dataloaders(
 
     class_names = train_dataset.classes
 
-    # ------------------------------------------------------
+    
     # Handle Class Imbalance
-    # ------------------------------------------------------
+    
 
     train_labels = train_dataset.targets
 
@@ -143,9 +133,9 @@ def get_dataloaders(
         replacement=True
     )
 
-    # ------------------------------------------------------
+   
     # DataLoaders
-    # ------------------------------------------------------
+    
 
     train_loader = DataLoader(
         train_dataset,
@@ -178,9 +168,9 @@ def get_dataloaders(
     )
 
 
-# ==========================================================
+
 # Testing
-# ==========================================================
+
 
 if __name__ == "__main__":
 

@@ -2,12 +2,7 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-# ==========================================================
-# Model Metadata
-# ==========================================================
-# All benchmark models and their required input resolutions.
-# This dictionary serves as the single source of truth for the
-# benchmarking framework.
+
 
 MODEL_INFO = {
     "efficientnet_b0": {
@@ -112,9 +107,9 @@ def _set_trainable(model, freeze_backbone):
         param.requires_grad = not freeze_backbone
 
 
-# ==========================================================
+
 # Model Factory
-# ==========================================================
+
 
 def get_model(
         num_classes=4,
@@ -146,9 +141,9 @@ def get_model(
 
     weights = "DEFAULT" if pretrained else None
 
-        # ======================================================
+        
     # EfficientNet-B0
-    # ======================================================
+   
     if model_name == "efficientnet_b0":
 
         model = models.efficientnet_b0(weights=weights)
@@ -162,9 +157,8 @@ def get_model(
             nn.Linear(in_features, num_classes)
         )
 
-    # ======================================================
     # MobileNetV2
-    # ======================================================
+   
     elif model_name == "mobilenet_v2":
 
         model = models.mobilenet_v2(weights=weights)
@@ -178,9 +172,8 @@ def get_model(
             nn.Linear(in_features, num_classes)
         )
 
-    # ======================================================
     # ShuffleNetV2
-    # ======================================================
+    
     elif model_name == "shufflenet_v2_x1_0":
 
         model = models.shufflenet_v2_x1_0(weights=weights)
@@ -194,9 +187,9 @@ def get_model(
             num_classes
         )
 
-    # ======================================================
+    
     # SqueezeNet1.1
-    # ======================================================
+    
     elif model_name == "squeezenet1_1":
 
         model = models.squeezenet1_1(weights=weights)
@@ -212,9 +205,9 @@ def get_model(
 
         model.num_classes = num_classes
 
-    # ======================================================
+   
     # DenseNet121
-    # ======================================================
+    
     elif model_name == "densenet121":
 
         model = models.densenet121(weights=weights)
@@ -228,9 +221,9 @@ def get_model(
             num_classes
         )
 
-    # ======================================================
+    
     # ResNet18
-    # ======================================================
+    
     elif model_name == "resnet18":
 
         model = models.resnet18(weights=weights)
@@ -244,9 +237,9 @@ def get_model(
             num_classes
         )
 
-    # ======================================================
+    
     # ResNet34
-    # ======================================================
+    
     elif model_name == "resnet34":
 
         model = models.resnet34(weights=weights)
@@ -260,9 +253,9 @@ def get_model(
             num_classes
         )
 
-            # ======================================================
+            
     # ResNet50
-    # ======================================================
+    
     elif model_name == "resnet50":
 
         model = models.resnet50(weights=weights)
@@ -276,9 +269,9 @@ def get_model(
             num_classes
         )
 
-    # ======================================================
-    # VGG16 (Optional)
-    # ======================================================
+    
+    # VGG16
+    
     elif model_name == "vgg16":
 
         model = models.vgg16(weights=weights)
@@ -292,9 +285,9 @@ def get_model(
             num_classes
         )
 
-    # ======================================================
-    # Inception V3 (Optional)
-    # ======================================================
+    
+    # Inception V3 
+    
     elif model_name == "inception_v3":
 
         model = models.inception_v3(
@@ -326,9 +319,9 @@ def get_model(
     return model
 
 
-# ==========================================================
+
 # Standalone Test
-# ==========================================================
+
 
 if __name__ == "__main__":
 

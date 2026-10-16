@@ -1,13 +1,26 @@
-import os
-import sys
+
+from pathlib import Path
 import subprocess
-import time
+import sys
 
-# ==========================================================
-# Models to Train
-# ==========================================================
+# --------------------------------------------------
+# Project paths
+# --------------------------------------------------
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+
+DATASET_PATH = PROJECT_ROOT / "Split_Data_PatientWise"
+RESULTS_ROOT = PROJECT_ROOT / "outputs_merged_patientwise_20261013"
+
+TRAIN_SCRIPT = PROJECT_ROOT / "train.py"
+EVALUATE_SCRIPT = PROJECT_ROOT / "evaluate.py"
+BENCHMARK_SCRIPT = PROJECT_ROOT / "benchmark.py"
+AGGREGATE_SCRIPT = PROJECT_ROOT / "aggregate_results.py"
+
+# Start with one model to verify the complete pipeline.
+# After success, add the remaining model names.
 MODELS = [
+
     "efficientnet_b0",
 
     "mobilenet_v2",
@@ -26,177 +39,141 @@ MODELS = [
 
     "vgg16"
 
-
 ]
 
-RESULTS_ROOT = "benchmark_results"
+BATCH_SIZE = 32
+EPOCHS = 20
+LEARNING_RATE = 1e-4
+WEIGHT_DECAY = 1e-4
+PATIENCE = 5
 
-DATASET_PATH = "Split_Data"
 
-# ==========================================================
-# Train Model
-# ==========================================================
+def run_command(command):
+    """Run a script and stop immediately if it fails."""
+    print("\n" + "=" * 80)
+    print("Running:", " ".join(str(item) for item in command))
+    print("=" * 80)
 
-def train_model(model_name):
-
-    
-    print(f"TRAINING {model_name}")
-    
-
-    subprocess.run([
-
-        sys.executable,
-
-        "train.py",
-
-        "--model_name",
-
-        model_name,
-
-        "--data_dir",
-
-        DATASET_PATH,
-
-        "--output_dir",
-
-        RESULTS_ROOT
-
-    ], check=True)
-
-# ==========================================================
-# Evaluate Model
-# ==========================================================
-
-def evaluate_model(model_name):
-
-    
-    print(f"EVALUATING {model_name}")
-    
-
-    model_path = os.path.join(
-
-        RESULTS_ROOT,
-
-        model_name,
-
-        "checkpoints",
-
-        "best_model.pth"
-
+    subprocess.run(
+        [str(item) for item in command],
+        cwd=str(PROJECT_ROOT),
+        check=True,
     )
 
-    output_dir = os.path.join(
 
-        RESULTS_ROOT,
+def validate_paths():
+    """Check the required inputs before starting training."""
 
-        model_name,
+    required_paths = [
+        DATASET_PATH / "Train",
+        DATASET_PATH / "Validation",
+        DATASET_PATH / "Test",
+        TRAIN_SCRIPT,
+        EVALUATE_SCRIPT,
+        BENCHMARK_SCRIPT,
+        AGGREGATE_SCRIPT,
+    ]
 
-        "evaluation"
+    for path in required_paths:
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Required path not found:\n{path}"
+            )
 
-    )
+    for split in ["Train", "Validation", "Test"]:
+        split_path = DATASET_PATH / split
 
-    subprocess.run([
+        class_folders = [
+            item for item in split_path.iterdir()
+            if item.is_dir()
+        ]
 
+        if not class_folders:
+            raise RuntimeError(
+                f"No class folders found in:\n{split_path}"
+            )
+
+    # Prevent accidental overwriting of a previous experiment.
+    if RESULTS_ROOT.exists() and any(RESULTS_ROOT.iterdir()):
+        raise FileExistsError(
+            "The output folder already contains files:\n"
+            f"{RESULTS_ROOT}\n"
+            "Choose a new RESULTS_ROOT before running."
+        )
+
+    RESULTS_ROOT.mkdir(parents=True, exist_ok=True)
+
+
+def main():
+    validate_paths()
+
+    print("Project:", PROJECT_ROOT)
+    print("Dataset:", DATASET_PATH)
+    print("Results:", RESULTS_ROOT)
+    print("Models:", MODELS)
+
+    for model_name in MODELS:
+        print(f"\n\n######## {model_name} ########")
+
+        # 1. Train with the existing training strategy.
+        run_command([
+            sys.executable,
+            str(TRAIN_SCRIPT),
+            "--model_name", model_name,
+            "--data_dir", str(DATASET_PATH),
+            "--output_dir", str(RESULTS_ROOT),
+            "--batch_size", str(BATCH_SIZE),
+            "--epochs", str(EPOCHS),
+            "--lr", str(LEARNING_RATE),
+            "--weight_decay", str(WEIGHT_DECAY),
+            "--patience", str(PATIENCE),
+        ])
+
+        checkpoint = (
+            RESULTS_ROOT
+            / model_name
+            / "checkpoints"
+            / "best_model.pth"
+        )
+
+        if not checkpoint.exists():
+            raise FileNotFoundError(
+                "Training did not produce the expected checkpoint:\n"
+                f"{checkpoint}"
+            )
+
+        # 2. Evaluate the saved best checkpoint on the test set.
+        run_command([
+            sys.executable,
+            str(EVALUATE_SCRIPT),
+            "--model_name", model_name,
+            "--data_dir", str(DATASET_PATH),
+            "--model_path", str(checkpoint),
+            "--output_dir",
+            str(RESULTS_ROOT / model_name / "evaluation"),
+            "--batch_size", str(BATCH_SIZE),
+        ])
+
+        # 3. Benchmark the model architecture.
+        run_command([
+            sys.executable,
+            str(BENCHMARK_SCRIPT),
+            "--model_name", model_name,
+            "--output_dir", str(RESULTS_ROOT),
+        ])
+
+    # 4. Combine model evaluation and benchmark results.
+    run_command([
         sys.executable,
+        str(AGGREGATE_SCRIPT),
+        "--results_root", str(RESULTS_ROOT),
+    ])
 
-        "evaluate.py",
+    print("\nPipeline completed successfully.")
+    print("Results folder:", RESULTS_ROOT)
+    print("Comparison CSV:", RESULTS_ROOT / "model_comparison.csv")
+    print("Comparison Excel:", RESULTS_ROOT / "model_comparison.xlsx")
 
-        "--model_name",
-
-        model_name,
-
-        "--data_dir",
-
-        DATASET_PATH,
-
-        "--model_path",
-
-        model_path,
-
-        "--output_dir",
-
-        output_dir
-
-    ], check=True)
-
-# ==========================================================
-# Benchmark Model
-# ==========================================================
-
-def benchmark_model(model_name):
-
-    
-    print(f"BENCHMARKING {model_name}")
-    
-
-    subprocess.run([
-
-        sys.executable,
-
-        "benchmark.py",
-
-        "--model_name",
-
-        model_name,
-
-        "--output_dir",
-
-        RESULTS_ROOT
-
-    ], check=True)
-
-# ==========================================================
-# Aggregate Results
-# ==========================================================
-
-def aggregate_results():
-
-    
-    print("CREATING FINAL COMPARISON TABLE")
-    
-
-    subprocess.run([
-
-        sys.executable,
-
-        "aggregate_results.py",
-
-        "--results_root",
-
-        RESULTS_ROOT
-
-    ], check=True)
-
-# ==========================================================
-# Main
-# ==========================================================
 
 if __name__ == "__main__":
-
-    start_time = time.time()
-
-   
-    print("CERVICAL CANCER MODEL BENCHMARK PIPELINE")
-    
-
-    print(f"\nModels to train: {len(MODELS)}")
-
-    for index, model_name in enumerate(MODELS, start=1):
-
-        
-        print(f"MODEL {index}/{len(MODELS)} : {model_name}")
-        
-
-        train_model(model_name)
-
-        evaluate_model(model_name)
-
-        benchmark_model(model_name)
-
-    aggregate_results()
-
-    total_time = (time.time() - start_time) / 60
-
-    
-    print("ALL EXPERIMENTS COMPLETED")
-    print(f"\nTotal Runtime : {total_time:.2f} minutes")
+    main()

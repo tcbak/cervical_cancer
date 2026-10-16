@@ -1,0 +1,13 @@
+﻿split,class,patients,images,image_percentage_of_split
+Train,Normal,46,46,35.11
+Train,CIN1,9,36,27.48
+Train,CIN2,7,29,22.14
+Train,CIN3,5,20,15.27
+Validation,Normal,10,10,27.78
+Validation,CIN1,2,9,25.0
+Validation,CIN2,2,9,25.0
+Validation,CIN3,2,8,22.22
+Test,Normal,10,10,32.26
+Test,CIN1,2,8,25.81
+Test,CIN2,2,9,29.03
+Test,CIN3,1,4,12.9
